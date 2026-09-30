@@ -162,6 +162,63 @@ app.get("/api/parse", async (c) => {
   }
 });
 
+/* ---- iOS 快捷指令一步到位 ----
+   GET /api/shortcut?u=<分享来的链接或 "纬度,经度">
+        解析 → 转 WGS-84 → 查海拔 → 302 跳到 Apple 的本机写入接口（由模块在设备端拦截落地）。
+        快捷指令里只需一个「获取 URL 内容」动作。
+   GET /api/shortcut?action=clear   → 302 跳到恢复真实定位的接口。
+   加 &fmt=raw 则不跳转，返回纯文本目标 URL，供「两步法」兜底使用。 */
+const APPLE_SAVE = "https://gs-loc.apple.com/ils-settings/save";
+
+async function elevationOf(lat, lon) {
+  try {
+    const r = await fetch(
+      `https://api.open-meteo.com/v1/elevation?latitude=${lat}&longitude=${lon}`,
+      { signal: AbortSignal.timeout(4000) }
+    );
+    const j = await r.json();
+    const e = j && Array.isArray(j.elevation) ? j.elevation[0] : NaN;
+    return Number.isFinite(e) ? Math.round(e) : null;
+  } catch (e) {
+    return null;
+  }
+}
+
+app.get("/api/shortcut", async (c) => {
+  const fmt = (c.req.query("fmt") || "").toLowerCase();
+  const out = (url) =>
+    fmt === "raw"
+      ? c.body(url, 200, { "Content-Type": "text/plain; charset=utf-8", "Access-Control-Allow-Origin": "*" })
+      : c.body(null, 302, { Location: url });
+  try {
+    if ((c.req.query("action") || "").toLowerCase() === "clear") {
+      return out(APPLE_SAVE + "?action=clear");
+    }
+    let lat, lon, src;
+    const u = (c.req.query("u") || "").trim();
+    if (u) {
+      ({ lat, lon, src } = await parseCoords(u));
+      ({ lat, lon } = toWgs84(lat, lon, src));
+    } else {
+      lat = parseFloat(c.req.query("lat"));
+      lon = parseFloat(c.req.query("lon"));
+    }
+    lat = round6(lat);
+    lon = round6(lon);
+    if (!Number.isFinite(lat) || !Number.isFinite(lon) || Math.abs(lat) > 90 || Math.abs(lon) > 180) {
+      return c.json({ error: "bad coordinates" }, 422);
+    }
+    let alt = parseFloat(c.req.query("alt"));
+    if (!Number.isFinite(alt)) alt = await elevationOf(lat, lon);
+    const q = [`lat=${lat}`, `lon=${lon}`];
+    if (Number.isFinite(alt)) q.push(`alt=${alt}`);
+    q.push("hacc=39", "vacc=1000");
+    return out(APPLE_SAVE + "?" + q.join("&"));
+  } catch (e) {
+    return c.json({ error: String(e && e.message ? e.message : e) }, 422);
+  }
+});
+
 /* ---- Telegram bot webhook: a user sends /link (or /start) → the bot replies with the homepage link.
    One-time setup:
      1) @BotFather → 你的 bot → 拿 API token
