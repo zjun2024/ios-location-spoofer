@@ -48,7 +48,7 @@
 
 | 客户端 | 地址 |
 |---|---|
-| Surge / Shadowrocket / Egern | `https://YOUR_WORKER.workers.dev/ios-location-spoofer.sgmodule` |
+| Surge / Shadowrocket / Egern | `https://zjun2024-ioslocspo.zjun03321.workers.dev/ios-location-spoofer.sgmodule` |
 | Loon | `…/ios-location-spoofer.lnplugin` |
 | Stash | `…/ios-location-spoofer.stoverride` |
 | Quantumult X（重写引用） | `…/ios-location-spoofer.snippet` |
