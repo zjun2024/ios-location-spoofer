@@ -1,10 +1,6 @@
 # iOS Location Spoofer
 
-自建了worker网页，选点页也在里面：https://cyberhandyman-ioslocspo.cyberhandyman.workers.dev
-
-视频教程：https://youtu.be/EspuRlKWUxc
-
-> 📺 YouTube：**[CyberHandyman 赛博工具人](https://www.youtube.com/@CyberHandyman/videos)** ｜ ✈️ Telegram 讨论群：**[@cyberhandymancngroup](https://t.me/cyberhandymancngroup)**
+自建了 worker 网页，选点页也在里面（部署后填你自己的地址）：`https://YOUR_WORKER.workers.dev`
 
 > ✅ **已同步上游 [Yu9191/wloc v1.1](https://github.com/Yu9191/wloc/releases)**：随机扰动半径（每次定位在目标点周围随机偏移，避免结果完全相同）· 港澳台坐标（苹果/Google 在港澳台直发 WGS-84，不再误做 GCJ 反算）· 百度链接解析 · 高德 `position=` 经纬顺序修正。扰动半径在选点页设置。
 
@@ -19,10 +15,10 @@
 
 ## 🚀 一键部署你自己的选点页
 
-不想用我的网址、或者想自己掌控？点下面的按钮，登录 Cloudflare 后一路下一步，
+不想用别人的网址、或者想自己掌控？点下面的按钮，登录 Cloudflare 后一路下一步，
 **30 秒**就能部署一份**属于你自己的**选点页（Cloudflare 免费额度完全够用）：
 
-[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/cyberhandyman/ios-location-spoofer/tree/main/stateless-picker/worker)
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/zjun2024/ios-location-spoofer/tree/main/stateless-picker/worker)
 
 部署完你会拿到一个自己的网址（形如 `https://xxx.你的账号.workers.dev`）。
 它自带全部模块文件，主页里的「一键导入」按钮会**自动指向你自己的域名**，不用改任何代码。
@@ -48,14 +44,14 @@
 
 ## 📦 模块安装地址
 
-推荐直接在[选点页首页](https://cyberhandyman-ioslocspo.cyberhandyman.workers.dev)点「一键导入」。手动添加用下面的地址：
+推荐直接在[选点页首页](https://YOUR_WORKER.workers.dev)点「一键导入」。手动添加用下面的地址：
 
 | 客户端 | 模块地址 |
 |---|---|
-| Shadowrocket / Surge / Egern | `https://raw.githubusercontent.com/cyberhandyman/ios-location-spoofer/main/ios-location-spoofer.sgmodule` |
-| Loon | `https://raw.githubusercontent.com/cyberhandyman/ios-location-spoofer/main/ios-location-spoofer.lnplugin` |
-| Stash | `https://raw.githubusercontent.com/cyberhandyman/ios-location-spoofer/main/ios-location-spoofer.stoverride` |
-| Quantumult X | `https://raw.githubusercontent.com/cyberhandyman/ios-location-spoofer/main/ios-location-spoofer.snippet` |
+| Shadowrocket / Surge / Egern | `https://raw.githubusercontent.com/zjun2024/ios-location-spoofer/main/ios-location-spoofer.sgmodule` |
+| Loon | `https://raw.githubusercontent.com/zjun2024/ios-location-spoofer/main/ios-location-spoofer.lnplugin` |
+| Stash | `https://raw.githubusercontent.com/zjun2024/ios-location-spoofer/main/ios-location-spoofer.stoverride` |
+| Quantumult X | `https://raw.githubusercontent.com/zjun2024/ios-location-spoofer/main/ios-location-spoofer.snippet` |
 
 **MITM 主机名**（如全部配置成功仍不生效，手动加入这四个域名）：
 
@@ -87,7 +83,6 @@ iPhone 靠周围 Wi-Fi、基站的 BSSID 去问 Apple「这些设备在哪」，
 1. 本项目为免费开源工具，**仅供个人学习、研究与技术测试之用**，请勿用于任何违反所在国家/地区法律法规的用途。
 2. 使用本项目（含模块、脚本、选点页）所引发的**一切风险与后果由使用者自行承担**，与开源项目原作者、贡献者及本仓库维护者无关。
 3. 本项目与 **Apple Inc.** 无任何关联，不隶属、不代表 Apple，亦未获其授权或认可。
-4. 本项目**不在中国大陆提供服务**。
-5. 下载、安装或使用本项目，即视为你已阅读并同意本声明；如不同意，请立即停止使用。
+4. 下载、安装或使用本项目，即视为你已阅读并同意本声明；如不同意，请立即停止使用。
 
 许可证：**GNU AGPL-3.0**（继承自上游项目）
