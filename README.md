@@ -1,6 +1,6 @@
 # iOS Location Spoofer
 
-自建了 worker 网页，选点页也在里面：[https://zjun2024-ioslocspo.zjun03321.workers.dev](https://zjun2024-ioslocspo.zjun03321.workers.dev)
+自建了 worker 网页，选点页也在里面：[https://zjun03321.dpdns.org](https://zjun03321.dpdns.org)（备用地址：https://zjun2024-ioslocspo.zjun03321.workers.dev，国内需代理）
 
 > ✅ **已同步上游 [Yu9191/wloc v1.1](https://github.com/Yu9191/wloc/releases)**：随机扰动半径（每次定位在目标点周围随机偏移，避免结果完全相同）· 港澳台坐标（苹果/Google 在港澳台直发 WGS-84，不再误做 GCJ 反算）· 百度链接解析 · 高德 `position=` 经纬顺序修正。扰动半径在选点页设置。
 
@@ -44,7 +44,7 @@
 
 ## 📦 模块安装地址
 
-推荐直接在[选点页首页](https://zjun2024-ioslocspo.zjun03321.workers.dev)点「一键导入」。手动添加用下面的地址：
+推荐直接在[选点页首页](https://zjun03321.dpdns.org)点「一键导入」。手动添加用下面的地址：
 
 | 客户端 | 模块地址 |
 |---|---|
