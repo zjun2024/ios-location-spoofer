@@ -1,6 +1,6 @@
 # iOS Location Spoofer
 
-自建了 worker 网页，选点页也在里面（部署后填你自己的地址）：`https://zjun2024-ioslocspo.zjun03321.workers.dev`
+自建了 worker 网页，选点页也在里面：[https://zjun2024-ioslocspo.zjun03321.workers.dev](https://zjun2024-ioslocspo.zjun03321.workers.dev)
 
 > ✅ **已同步上游 [Yu9191/wloc v1.1](https://github.com/Yu9191/wloc/releases)**：随机扰动半径（每次定位在目标点周围随机偏移，避免结果完全相同）· 港澳台坐标（苹果/Google 在港澳台直发 WGS-84，不再误做 GCJ 反算）· 百度链接解析 · 高德 `position=` 经纬顺序修正。扰动半径在选点页设置。
 

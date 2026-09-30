@@ -8,7 +8,7 @@ Use the HTTPS-decryption (MITM) feature of a proxy app to trick Apple's location
 
 > 📖 **New here?** The step-by-step walkthrough is Chinese-only for now → [使用教程.md](使用教程.md) (install, configure, verify, and troubleshooting).
 >
-> 🗺️ **Online map picker (stateless, shareable by many)** → **https://zjun2024-ioslocspo.zjun03321.workers.dev**
+> 🗺️ **Online map picker (stateless, shareable by many)** → **[https://zjun2024-ioslocspo.zjun03321.workers.dev](https://zjun2024-ioslocspo.zjun03321.workers.dev)**
 >
 > Tap the map → auto altitude → one tap writes to your own device. Coordinates live only on **each device**, never on the server, so one URL can be shared by any number of people without overwriting each other. Pair it with the [**stateless module (stateless-picker/)**](stateless-picker/README.md) (setup & self-hosting there).
 
