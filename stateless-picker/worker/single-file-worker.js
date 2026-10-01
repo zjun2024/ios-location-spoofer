@@ -1778,6 +1778,79 @@ for (const [name, b64] of Object.entries(SHORTCUT_FILES)) {
   );
 }
 
+/* ---- 一键安装页：点按钮 → 直接跳进「快捷指令」App 导入 ----
+   用官方 URL scheme shortcuts://import-shortcut?url=…（Safari 里点一下就跳转，
+   不需要先下载文件；对未签名的 .shortcut 也有效，iOS 16~18 均可用）。
+   真正的 icloud.com/shortcuts/xxx 分享链接只能在手机上「共享 → 拷贝 iCloud 链接」生成，
+   服务器无法代劳 —— 页面里写了生成方法，导入一次后即可拿到。 */
+const INSTALL_ITEMS = [
+  { file: "set-location.shortcut", btn: "🎯 添加「改定位」", name: "改定位", desc: "分享地图链接 / 坐标文本即可改定位（已在共享表单中显示）" },
+  { file: "clear-location.shortcut", btn: "↩️ 添加「恢复定位」", name: "恢复定位", desc: "清除虚拟坐标，恢复真实位置" },
+];
+
+function installHtml(origin) {
+  const buttons = INSTALL_ITEMS.map((it) => {
+    const fileUrl = `${origin}/shortcuts/${it.file}`;
+    const deep = `shortcuts://import-shortcut?url=${encodeURIComponent(fileUrl)}&name=${encodeURIComponent(it.name)}`;
+    const encoded = deep.replace(/&/g, "&amp;");
+    return `<a class="btn" href="${encoded}">${it.btn}</a><p class="desc">${it.desc}</p>`;
+  }).join("\n");
+  const downloads = INSTALL_ITEMS.map(
+    (it) => `<li><a href="/shortcuts/${it.file}">${it.name}.shortcut</a>（Safari 下载后点文件导入）</li>`
+  ).join("\n");
+  return `<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>一键添加到快捷指令 · iOS Location Spoofer</title>
+<style>
+  :root { color-scheme: light dark; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; margin: 0 auto; max-width: 640px; padding: 24px 18px 40px; line-height: 1.6; }
+  h1 { font-size: 1.5em; margin: 0 0 6px; } h2 { font-size: 1.1em; margin: 28px 0 8px; }
+  .tip { background: rgba(0,122,255,.12); border-radius: 12px; padding: 12px 14px; margin: 14px 0 20px; }
+  .btn { display: block; text-align: center; text-decoration: none; color: #fff; background: #007aff; border-radius: 14px; padding: 15px 12px; font-size: 1.05em; font-weight: 600; margin: 14px 0 4px; }
+  .btn:active { opacity: .7; }
+  .desc { margin: 0 4px 18px; font-size: .9em; opacity: .75; }
+  details { background: rgba(127,127,127,.12); border-radius: 12px; padding: 12px 14px; }
+  summary { cursor: pointer; font-weight: 600; }
+  ol, ul { padding-left: 22px; } li { margin: 6px 0; }
+  a { color: #007aff; }
+  .note { font-size: .85em; opacity: .7; margin-top: 26px; }
+  code { word-break: break-all; }
+</style></head><body>
+<h1>📲 一键添加到快捷指令</h1>
+<p class="tip">点下面的按钮，会自动跳到<strong>「快捷指令」App</strong> 并弹出预览，拉到底部点<strong>「添加快捷指令」</strong>即可。<br>
+前提：模块已装好（代理 + 开 HTTPS 解密 + 证书已信任）。</p>
+${buttons}
+
+<details><summary>点按钮没反应 / 提示打不开？</summary>
+<p>按顺序试：</p>
+<ol>
+  <li><strong>改用下载方式</strong>（Safari 会提示下载，下完在下载列表里点文件即可导入）：
+    <ul>${downloads}</ul></li>
+  <li>设置 → 快捷指令 → 打开<strong>「允许不受信任的快捷指令」</strong>（首次导入第三方指令会用到）</li>
+  <li>都不行就手动搭：改定位 6 步 / 恢复 1 步，见
+    <a href="https://github.com/zjun2024/ios-location-spoofer/blob/main/使用教程.md">使用教程</a> 末尾「iOS 快捷指令」章节</li>
+</ol>
+</details>
+
+<h2>🔗 想要 icloud.com/shortcuts/xxx 那种永久链接？</h2>
+<p>那种链接由 <strong>Apple 在你手机上</strong>生成，服务器造不出来。导入上面任意一支后，花 20 秒拿一次即可终身受用：</p>
+<ol>
+  <li>打开<strong>「快捷指令」App</strong>，在列表里<strong>长按</strong>刚导入的指令</li>
+  <li>点<strong>「共享」→「拷贝 iCloud 链接」</strong></li>
+  <li>粘贴出来的就是 <code>https://www.icloud.com/shortcuts/…</code>，发给谁都是一点直接跳进快捷指令</li>
+</ol>
+<p class="note">本页与指令由 ${origin} 提供。</p>
+</body></html>`;
+}
+
+for (const p of ["/install", "/shortcuts"]) {
+  app.get(p, (c) => {
+    c.header("Cache-Control", "no-cache");
+    return c.html(installHtml(new URL(c.req.url).origin));
+  });
+}
+
 /* ---- Telegram bot webhook: a user sends /link (or /start) → the bot replies with the homepage link.
    One-time setup:
      1) @BotFather → 你的 bot → 拿 API token
