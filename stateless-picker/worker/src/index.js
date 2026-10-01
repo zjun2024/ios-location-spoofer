@@ -4,6 +4,7 @@ import { getLandingHtml } from "./landing.js";
 import { parseCoords, toWgs84, gcj02ToWgs84, round6 } from "./parse.js";
 import { ICON_180_B64, ICON_512_B64, ICON_SVG, b64ToBytes } from "./icons.js";
 import { LOCATION_SPOOFER_B64, LOCATION_SETTINGS_B64, LOCATION_SPOOFER_QX_B64 } from "./modules.js";
+import { SHORTCUT_FILES } from "./shortcuts-data.js";
 
 const app = new Hono();
 
@@ -218,6 +219,22 @@ app.get("/api/shortcut", async (c) => {
     return c.json({ error: String(e && e.message ? e.message : e) }, 422);
   }
 });
+
+/* ---- iOS 快捷指令文件下载 ----
+   GET /shortcuts/set-location.shortcut  （改定位）
+   GET /shortcuts/clear-location.shortcut（恢复真实定位）
+   二进制文件由 scripts/gen-shortcuts.mjs 从仓库根目录 shortcuts/ 打进 src/shortcuts-data.js。
+   用 Content-Disposition 强制下载 → iPhone 的 Safari 点开就导入「快捷指令」App。
+   （GitHub raw 在大陆不可用，所以文件放在自己的域名上。） */
+for (const [name, b64] of Object.entries(SHORTCUT_FILES)) {
+  app.get(`/shortcuts/${name}`, (c) =>
+    c.body(b64ToBytes(b64), 200, {
+      "Content-Type": "application/octet-stream",
+      "Content-Disposition": `attachment; filename="${name}"`,
+      "Cache-Control": "public, max-age=86400",
+    })
+  );
+}
 
 /* ---- Telegram bot webhook: a user sends /link (or /start) → the bot replies with the homepage link.
    One-time setup:
