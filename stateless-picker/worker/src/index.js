@@ -242,63 +242,78 @@ for (const [name, b64] of Object.entries(SHORTCUT_FILES)) {
    真正的 icloud.com/shortcuts/xxx 分享链接只能在手机上「共享 → 拷贝 iCloud 链接」生成，
    服务器无法代劳 —— 页面里写了生成方法，导入一次后即可拿到。 */
 const INSTALL_ITEMS = [
-  { file: "set-location.shortcut", btn: "🎯 添加「改定位」", name: "改定位", desc: "分享地图链接 / 坐标文本即可改定位（已在共享表单中显示）" },
-  { file: "clear-location.shortcut", btn: "↩️ 添加「恢复定位」", name: "恢复定位", desc: "清除虚拟坐标，恢复真实位置" },
+  { base: "set-location.shortcut", btn: "🎯 添加「改定位」", name: "改定位", desc: "分享地图链接 / 坐标文本即可改定位（已在共享表单中显示）" },
+  { base: "clear-location.shortcut", btn: "↩️ 添加「恢复定位」", name: "恢复定位", desc: "清除虚拟坐标，恢复真实位置" },
 ];
+/* 优先用签名版（Mac 上 `shortcuts sign --mode anyone` 生成后放到 shortcuts/ 即可，
+   gen-shortcuts.mjs 会自动打进 Worker）；没有签名版才回落到未签名文件。 */
+const signedName = (base) => (SHORTCUT_FILES[base.replace(/\.shortcut$/, "-signed.shortcut")] ? base.replace(/\.shortcut$/, "-signed.shortcut") : base);
 
 function installHtml(origin) {
   const buttons = INSTALL_ITEMS.map((it) => {
-    const fileUrl = `${origin}/shortcuts/${it.file}`;
+    const file = signedName(it.base);
+    const fileUrl = `${origin}/shortcuts/${file}`;
     const deep = `shortcuts://import-shortcut?url=${encodeURIComponent(fileUrl)}&name=${encodeURIComponent(it.name)}`;
     const encoded = deep.replace(/&/g, "&amp;");
-    return `<a class="btn" href="${encoded}">${it.btn}</a><p class="desc">${it.desc}</p>`;
+    const tag = file !== it.base ? "（已签名）" : "（未签名，iOS 15+ 会被拒）";
+    return `<a class="btn" href="${encoded}">${it.btn}</a><p class="desc">${it.desc} · ${file}${tag}</p>`;
   }).join("\n");
-  const downloads = INSTALL_ITEMS.map(
-    (it) => `<li><a href="/shortcuts/${it.file}">${it.name}.shortcut</a>（Safari 下载后点文件导入）</li>`
-  ).join("\n");
+  const downloads = INSTALL_ITEMS.map((it) => {
+    const file = signedName(it.base);
+    return `<li><a href="/shortcuts/${file}">${file}</a></li>`;
+  }).join("\n");
   return `<!doctype html>
 <html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>一键添加到快捷指令 · iOS Location Spoofer</title>
+<title>添加到快捷指令 · iOS Location Spoofer</title>
 <style>
   :root { color-scheme: light dark; }
   body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; margin: 0 auto; max-width: 640px; padding: 24px 18px 40px; line-height: 1.6; }
-  h1 { font-size: 1.5em; margin: 0 0 6px; } h2 { font-size: 1.1em; margin: 28px 0 8px; }
+  h1 { font-size: 1.5em; margin: 0 0 6px; } h2 { font-size: 1.1em; margin: 26px 0 8px; }
+  .warn { background: rgba(255,59,48,.12); border-radius: 12px; padding: 12px 14px; margin: 14px 0; }
   .tip { background: rgba(0,122,255,.12); border-radius: 12px; padding: 12px 14px; margin: 14px 0 20px; }
   .btn { display: block; text-align: center; text-decoration: none; color: #fff; background: #007aff; border-radius: 14px; padding: 15px 12px; font-size: 1.05em; font-weight: 600; margin: 14px 0 4px; }
   .btn:active { opacity: .7; }
-  .desc { margin: 0 4px 18px; font-size: .9em; opacity: .75; }
-  details { background: rgba(127,127,127,.12); border-radius: 12px; padding: 12px 14px; }
+  .desc { margin: 0 4px 18px; font-size: .85em; opacity: .75; word-break: break-all; }
+  details { background: rgba(127,127,127,.12); border-radius: 12px; padding: 12px 14px; margin-top: 18px; }
   summary { cursor: pointer; font-weight: 600; }
   ol, ul { padding-left: 22px; } li { margin: 6px 0; }
   a { color: #007aff; }
-  .note { font-size: .85em; opacity: .7; margin-top: 26px; }
   code { word-break: break-all; }
+  .note { font-size: .85em; opacity: .7; margin-top: 26px; }
 </style></head><body>
-<h1>📲 一键添加到快捷指令</h1>
-<p class="tip">点下面的按钮，会自动跳到<strong>「快捷指令」App</strong> 并弹出预览，拉到底部点<strong>「添加快捷指令」</strong>即可。<br>
-前提：模块已装好（代理 + 开 HTTPS 解密 + 证书已信任）。</p>
-${buttons}
+<h1>📲 添加到快捷指令</h1>
 
-<details><summary>点按钮没反应 / 提示打不开？</summary>
-<p>按顺序试：</p>
+<div class="warn"><strong>⚠️ iOS 15 及以上会拒绝未签名的指令文件</strong>（提示「无法打开快捷指令 / 不支持导入未签名的快捷指令文件」）。<br>
+签名只能由 <strong>Mac</strong> 上的 <code>shortcuts sign</code> 或手机上的「共享」流程产生。所以下面两条路二选一：</div>
+
+<h2>路线 1 · 没有 Mac（5 分钟，推荐）</h2>
+<p>手动建一次 → 立刻拿到 <strong>icloud.com/shortcuts/xxx</strong> 那种永久一键链接：</p>
 <ol>
-  <li><strong>改用下载方式</strong>（Safari 会提示下载，下完在下载列表里点文件即可导入）：
-    <ul>${downloads}</ul></li>
-  <li>设置 → 快捷指令 → 打开<strong>「允许不受信任的快捷指令」</strong>（首次导入第三方指令会用到）</li>
-  <li>都不行就手动搭：改定位 6 步 / 恢复 1 步，见
-    <a href="https://github.com/zjun2024/ios-location-spoofer/blob/main/使用教程.md">使用教程</a> 末尾「iOS 快捷指令」章节</li>
+  <li>照 <a href="https://github.com/zjun2024/ios-location-spoofer/blob/main/使用教程.md">使用教程</a>
+    末尾「iOS 快捷指令」章节，手动添加 6 步（改定位）/ 1 步（恢复）</li>
+  <li>列表里<strong>长按</strong>该指令 → <strong>共享</strong> → <strong>拷贝 iCloud 链接</strong></li>
+  <li>粘出来的就是一点直接跳进快捷指令的永久链接（Apple 会在共享时自动签名）</li>
 </ol>
+
+<h2>路线 2 · 你有 Mac</h2>
+<p>在 Mac 终端执行（把两个文件签成「任何人都能导入」）：</p>
+<pre><code>shortcuts sign --mode anyone -i set-location.shortcut -o set-location-signed.shortcut
+shortcuts sign --mode anyone -i clear-location.shortcut -o clear-location-signed.shortcut</code></pre>
+<p>把签好的两个文件放进仓库 <code>shortcuts/</code> 目录 → 跑
+<code>node stateless-picker/worker/scripts/gen-shortcuts.mjs</code> → 重新部署，
+本页按钮和下面的下载就会<strong>自动改用签名版</strong>，一键导入即可用。</p>
+
+<h2>按钮 / 文件下载</h2>
+<p class="tip">当前部署的是<strong>未签名</strong>版本，iOS 15+ 点了会被拒 —— 留给 Mac 签名后使用，
+或 iOS 14 及以下系统直接点：</p>
+${buttons}
+<details><summary>直接下载 .shortcut 文件</summary>
+<ul>${downloads}</ul>
+<p>设置 → 快捷指令 → 打开「允许不受信任的快捷指令」可能也需要。</p>
 </details>
 
-<h2>🔗 想要 icloud.com/shortcuts/xxx 那种永久链接？</h2>
-<p>那种链接由 <strong>Apple 在你手机上</strong>生成，服务器造不出来。导入上面任意一支后，花 20 秒拿一次即可终身受用：</p>
-<ol>
-  <li>打开<strong>「快捷指令」App</strong>，在列表里<strong>长按</strong>刚导入的指令</li>
-  <li>点<strong>「共享」→「拷贝 iCloud 链接」</strong></li>
-  <li>粘贴出来的就是 <code>https://www.icloud.com/shortcuts/…</code>，发给谁都是一点直接跳进快捷指令</li>
-</ol>
-<p class="note">本页与指令由 ${origin} 提供。</p>
+<p class="note">前提：模块已装好（代理 + 开 HTTPS 解密 + 证书已信任）。本页由 ${origin} 提供。</p>
 </body></html>`;
 }
 
